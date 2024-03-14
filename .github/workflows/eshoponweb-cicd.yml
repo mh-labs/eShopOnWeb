@@ -1,4 +1,4 @@
-name: eShopOnWeb Build and Test
+name: eShopOnWeb CICD
 
 #Triggers (uncomment line below to use it)
 on: [push, workflow_dispatch]
@@ -8,7 +8,9 @@ env:
   RESOURCE-GROUP: rg-eshoponweb
   LOCATION: eastus2
   TEMPLATE-FILE: infra/webapp.bicep
-  SUBSCRIPTION-ID: d2d534a9-ddb9-449f-9466-0fa04218c17d
+  SUBSCRIPTION-ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  CLIENT-ID: ${{ secrets.AZURE_CLIENT_ID }}
+  TENANT-ID: ${{ secrets.AZURE_TENANT_ID }}
   WEBAPP-NAME: eshoponweb-dev-webapp
 
 
@@ -69,10 +71,13 @@ jobs:
         path: bicep-template
         
    #Login in your azure subscription using a service principal (credentials stored as GitHub Secret in repo)
-    - name: Azure Login
+    - name: OIDC Login to Azure Public Cloud with AzPowershell (enableAzPSSession true)
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }} 
+          enable-AzPSSession: true
            
     # Deploy Azure WebApp using Bicep file
     - name: deploy
